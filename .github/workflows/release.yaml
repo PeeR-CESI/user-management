@@ -8,7 +8,7 @@ jobs:
     uses: PeeR-CESI/pipeline-templates/.github/workflows/docker-release-app.yaml@main
     with:
       workingdir: .
-      img-name: test
+      img-name: user-management
       cache-registry: docker.io/xpapaya
       registry-url: docker.io
       registry-username: ${{ vars.DOCKER_HUB_USER }}
