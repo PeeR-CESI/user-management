@@ -1,0 +1,24 @@
+---
+name: CI
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - "main"
+  workflow_dispatch:
+jobs:
+  demo-web:
+    uses: PeeR-CESI/pipeline-templates/.github/workflows/docker-build-app.yaml@main
+    with:
+      workingdir: .
+      img-name: test
+      registry-username: ${{ vars.DOCKER_HUB_USER }}
+    secrets:
+      git-token: ${{ secrets.PAT }}
+      DOCKER_IO_PWD: ${{ secrets.DOCKER_HUB_TOKEN }}
