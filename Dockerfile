@@ -1,25 +1,20 @@
-ARG BASE_REGISTRY
+# Utiliser une image de base officielle Python 3.12.2
+FROM python:3.12.2
 
-FROM ${BASE_REGISTRY}python:3.12-alpine3.19 as base
+# Définir le répertoire de travail dans le conteneur
+WORKDIR /app
 
-ENV TZ="Europe/Paris"
+# Copier le fichier des dépendances dans le répertoire de travail courant
+COPY requirements.txt .
 
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk update --no-cache && \
-    apk upgrade --no-cache && \
-    apk add --no-cache --update \
-    git \
-    curl \
-    bash \
-    jq \
-    yq \
-    moreutils \
-    util-linux \
-    ca-certificates \
-    tzdata && \
-    cp /usr/share/zoneinfo/${TZ} /etc/localtime
+# Installer les dépendances
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk add --no-cache --update --repository="http://dl-cdn.alpinelinux.org/alpine/edge/community" \
-    helm \
-    github-cli
+# Copier le reste du code source de l'application dans le conteneur
+COPY src/ .
+
+# Exposer le port sur lequel l'application Flask écoute
+EXPOSE 5000
+
+# Définir la commande pour exécuter l'application Flask
+CMD ["flask", "run", "--host=0.0.0.0"]
