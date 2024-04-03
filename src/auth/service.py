@@ -20,28 +20,26 @@ def login_user(request):
     username = auth_data.get('username')
     password = auth_data.get('password')
 
-    # Vérification de la présence de username et password
+    # Vérification que les deux champs sont fournis
     if not username or not password:
-        return jsonify({'message': 'Login et mot de passe requis'}), 400
+        return jsonify({'message': 'Le nom d’utilisateur et le mot de passe sont requis.'}), 400
 
-    # Trouver l'utilisateur dans la base de données
+    # Recherche de l'utilisateur par nom d'utilisateur
     user = find_user_by_username(username)
-
-    # Utilisation de hashlib pour vérifier le hachage du mot de passe
-    hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
-
-    # Vérifier si l'utilisateur existe et si le mot de passe haché correspond
-    if user and hashed_input_password == user['password']:
-        # Générer le token JWT
-        token = jwt.encode({
-            'username': user['username'],
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-        }, SECRET_KEY, algorithm="HS256")
-
-        return jsonify({'message': 'Connexion réussie', 'token': token}), 200
+    if user:
+        # Vérification du mot de passe en comparant les hachages
+        hashed_input_password = hashlib.sha256(password.encode()).hexdigest()
+        if hashed_input_password == user['password']:
+            # Si les mots de passe correspondent, générer un token JWT
+            token = jwt.encode({
+                'username': username,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            }, SECRET_KEY, algorithm="HS256")
+            return jsonify({'message': 'Connexion réussie', 'token': token}), 200
+        else:
+            return jsonify({'message': 'Mot de passe incorrect.'}), 401
     else:
-        # Si l'utilisateur n'existe pas ou si le mot de passe ne correspond pas
-        return jsonify({'message': 'Login ou mot de passe incorrect'}), 401
+        return jsonify({'message': 'Nom d’utilisateur incorrect ou utilisateur non trouvé.'}), 404
 
 def authenticate_user(request):
     token = request.json['token']

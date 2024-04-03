@@ -23,7 +23,12 @@ class User:
     def update(user_id, user_data):
         if not ObjectId.is_valid(user_id):
             return False, "ID utilisateur invalide."
-        result = users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": user_data})
+
+        # Assurez-vous que l'opération update retourne les informations sur le succès de l'opération
+        result = users_collection.update_one(
+            {"_id": ObjectId(user_id)}, {"$set": user_data}
+        )
+
         if result.matched_count == 0:
             return False, "Utilisateur non trouvé."
         return True, "Utilisateur mis à jour avec succès."
