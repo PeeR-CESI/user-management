@@ -8,6 +8,7 @@ instance/*
 !instance/.gitignore
 .webassets-cache
 .env
+docker-compose.yaml
 
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
