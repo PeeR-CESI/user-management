@@ -10,4 +10,4 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(user_bp, url_prefix='/user')
 
 if __name__ == "__main__":
-    app.run(port=3000)
+    app.run(port=5000)

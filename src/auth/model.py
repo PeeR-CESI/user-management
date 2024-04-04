@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 
 client = MongoClient("mongodb://admin:admin@mongodb:27017")
-db = client['mydatabase']
-users_collection = db['users']
+db = client.user_database
+users_collection = db.users
 
 def create_user(user_data):
     users_collection.insert_one(user_data)
