@@ -6,7 +6,7 @@ review_bp = Blueprint('review_bp', __name__)
 @review_bp.route('/add', methods=['POST'])
 def add():
     """
-    Ajoute une review pour un prestataire
+    Ajoute une review pour un utilisateur
     ---
     tags:
       - review
@@ -15,7 +15,7 @@ def add():
     parameters:
       - in: body
         name: body
-        description: Données de la review et l'ID du prestataire
+        description: Données de la review et l'ID de l'utilisateur
         required: true
         schema:
           type: object
@@ -26,10 +26,10 @@ def add():
           properties:
             presta_id:
               type: integer
-              description: L'ID du prestataire ciblé
+              description: L'ID de l'utilisateur ciblé
             comment:
               type: string
-              description: Le commentaire sur le service du prestataire
+              description: Le commentaire sur l'utilisateur
             rating:
               type: integer
               description: La note attribuée (de 1 à 5)
@@ -41,7 +41,7 @@ def add():
       400:
         description: Données invalides fournies
       404:
-        description: Prestataire non trouvé
+        description: utilisateur non trouvé
     """
     data = request.json
     return add_review(data['presta_id'], data)

@@ -4,7 +4,7 @@ from flask import jsonify
 
 def add_review(presta_id, data):
     presta = User.query.get(presta_id)
-    if presta is None or presta.role != 'presta':
+    if presta is None:
         return jsonify({"error": "Utilisateur non trouvé ou n'est pas un prestataire."}), 404
 
     review = Review(comment=data['comment'], rating=data['rating'], presta_id=presta_id)
