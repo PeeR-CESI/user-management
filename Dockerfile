@@ -11,7 +11,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copier le reste du code source de l'application dans le conteneur
-COPY src/ .
+COPY . .
+
+# Ajouter le répertoire de travail courant (/app) à PYTHONPATH
+ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # Exposer le port sur lequel l'application Flask écoute
 EXPOSE 5000
