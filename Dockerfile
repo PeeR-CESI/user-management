@@ -13,11 +13,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier le reste du code source de l'application dans le conteneur
 COPY . .
 
+# Vérification de la structure des fichiers dans le conteneur
+RUN ls -la
+
 # Ajouter le répertoire de travail courant (/app) à PYTHONPATH
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # Définir la variable d'environnement FLASK_APP pour indiquer le fichier d'entrée de l'application Flask
-ENV FLASK_APP app.py
+ENV FLASK_APP src/app.py
 
 # Exposer le port sur lequel l'application Flask écoute
 EXPOSE 5000
