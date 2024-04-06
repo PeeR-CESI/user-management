@@ -1,11 +1,18 @@
-from pymongo import MongoClient
+# Utilisez le même db instance que vous avez créé dans le fichier précédent
+from src.user.model import db
 
-client = MongoClient("mongodb://admin:admin@mongodb:27017")
-db = client.user_database
-users_collection = db.users
+class AuthUser(db.Model):
+    __tablename__ = 'auth_users'
 
-def create_user(user_data):
-    users_collection.insert_one(user_data)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
 
-def find_user_by_username(username):
-    return users_collection.find_one({"username": username})
+    def create(self):
+        db.session.add(self)
+        db.session.commit()
+        return self.id
+
+    @classmethod
+    def find_by_username(cls, username):
+        return cls.query.filter_by(username=username).first()

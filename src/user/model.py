@@ -1,48 +1,14 @@
-from pymongo import MongoClient
-from bson.objectid import ObjectId
+from flask_sqlalchemy import SQLAlchemy
 
-client = MongoClient("mongodb://admin:admin@mongodb:27017")
-db = client.user_database
-users_collection = db.users
+db = SQLAlchemy()
 
-class User:
-    def __init__(self, nom, prenom, email, adresse, role):
-        self.nom = nom
-        self.prenom = prenom
-        self.email = email
-        self.adresse = adresse
-        self.role = role
-
-    @staticmethod
-    def create(user_data):
-        # Insérer l'utilisateur dans la base de données et retourner l'ID
-        inserted_id = users_collection.insert_one(user_data).inserted_id
-        return str(inserted_id)
-
-    @staticmethod
-    def update(user_id, user_data):
-        if not ObjectId.is_valid(user_id):
-            return False, "ID utilisateur invalide."
-
-        # Assurez-vous que l'opération update retourne les informations sur le succès de l'opération
-        result = users_collection.update_one(
-            {"_id": ObjectId(user_id)}, {"$set": user_data}
-        )
-
-        if result.matched_count == 0:
-            return False, "Utilisateur non trouvé."
-        return True, "Utilisateur mis à jour avec succès."
-
-    @staticmethod
-    def delete(user_id):
-        # Suppression de l'utilisateur
-        users_collection.delete_one({"_id": ObjectId(user_id)})
-
-    @staticmethod
-    def find(user_id):
-        # Recherche d'un utilisateur par son ID
-        user = users_collection.find_one({"_id": ObjectId(user_id)})
-        if user:
-            user['_id'] = str(user['_id'])  # Convertir ObjectId en String
-            return user
-        return None
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(80), nullable=False)
+    prenom = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    adresse = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)

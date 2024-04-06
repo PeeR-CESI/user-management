@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .service import add_user_service, update_user_service, delete_user_service, find_user_service
+from .service import add_user_service, update_user_service, delete_user_service, get_user_service, get_all_users_service
 
 user_bp = Blueprint('user_bp', __name__)
 
@@ -50,11 +50,8 @@ def create_user():
         description: Erreur de validation des données d'entrée
     """
     user_data = request.json
-    user_id, message = add_user_service(user_data)
-    if user_id:
-        return jsonify({"message": message, "user_id": user_id}), 201
-    else:
-        return jsonify({"error": message}), 400
+    result, status = add_user_service(user_data)
+    return jsonify(result), status
 
 @user_bp.route('/update/<user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -99,11 +96,7 @@ def update_user(user_id):
         description: ID utilisateur invalide ou erreur de validation des données
     """
     user_data = request.json
-    message, success = update_user_service(user_id, user_data)
-    if success:
-        return jsonify({"message": message}), 200
-    else:
-        return jsonify({"error": message}), 400
+    return update_user_service(user_id, user_data)
 
 @user_bp.route('/delete/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
@@ -121,8 +114,8 @@ def delete_user(user_id):
       204:
         description: Utilisateur supprimé avec succès
     """
-    result = delete_user_service(user_id)
-    return jsonify(result), 204
+    result, status = delete_user_service(user_id)
+    return jsonify(result), status
 
 @user_bp.route('/find/<user_id>', methods=['GET'])
 def get_user(user_id):
@@ -142,5 +135,20 @@ def get_user(user_id):
       404:
         description: Utilisateur non trouvé
     """
-    result, status = find_user_service(user_id)
-    return jsonify(result), status
+    return get_user_service(user_id)
+
+@user_bp.route('/all', methods=['GET'])
+def get_all_users():
+    """
+    Récupération de tous les utilisateurs
+    ---
+    tags:
+      - user
+    responses:
+      200:
+        description: Liste de tous les utilisateurs récupérée avec succès
+      500:
+        description: Erreur interne du serveur
+    """
+    users_data, status = get_all_users_service()
+    return jsonify(users_data), status

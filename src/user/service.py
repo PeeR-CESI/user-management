@@ -1,57 +1,146 @@
-from .model import User
+from .model import User, db
 import hashlib
 from bson.objectid import ObjectId
+from flask import jsonify
 
 required_fields = ["nom", "prenom", "email", "adresse", "role", "username", "password"]
-valid_roles = ["demandeur", "presta", "admin"]
+valid_roles = ["demandeur", "presta", "admin", "dev"]
 
 def validate_user_data(user_data):
-    # Vérifier la présence de tous les champs requis
-    if not all(field in user_data and user_data[field] for field in required_fields):
-        return False, "Tous les champs requis doivent être fournis et non vides."
-    # Vérifier la validité du rôle
+    missing_or_empty_fields = [field for field in required_fields if not user_data.get(field)]
+    if missing_or_empty_fields:
+        return False, f"Champs manquants ou vides: {', '.join(missing_or_empty_fields)}."
+
     if user_data["role"] not in valid_roles:
-        return False, "Rôle invalide."
-    # Ici, ajoutez d'autres validations selon vos besoins (ex : format de l'email)
-    return True, "Données valides."
+        return False, f"Rôle invalide. Les rôles valides sont: {', '.join(valid_roles)}."
+
+    # Ajouter ici d'autres validations si nécessaire
+
+    return True, "Validation réussie."
 
 def add_user_service(user_data):
-    is_valid, message = validate_user_data(user_data)
-    if not is_valid:
-        return None, message
+    # Vérifier si l'email ou le nom d'utilisateur existe déjà
+    user_exists = User.query.filter(
+        (User.email == user_data['email']) | (User.username == user_data['username'])
+    ).first()
 
-    # Hachage du mot de passe avec SHA-256
-    hashed_password = hashlib.sha256(user_data['password'].encode('utf-8')).hexdigest()
-    user_data['password'] = hashed_password  # Stocker le mot de passe haché
+    if user_exists:
+        return {"error": "L'email ou le nom d'utilisateur existe déjà."}, 400
 
-    user_id = User.create(user_data)
-    return user_id, "Utilisateur créé avec succès."
+    try:
+        # Hachage du mot de passe
+        hashed_password = hashlib.sha256(user_data['password'].encode('utf-8')).hexdigest()
+
+        # Création de l'instance User
+        new_user = User(
+            nom=user_data['nom'],
+            prenom=user_data['prenom'],
+            email=user_data['email'],
+            adresse=user_data['adresse'],
+            role=user_data['role'],
+            username=user_data['username'],
+            password=hashed_password
+        )
+
+        # Ajout à la base de données et commit
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Retourne un dictionnaire sérialisable en JSON et un code de statut HTTP
+        return {"message": "Utilisateur créé avec succès", "user_id": new_user.id}, 201
+    except Exception as e:
+        # En cas d'erreur, effectuer un rollback et retourner un message d'erreur
+        db.session.rollback()
+        return {"error": f"Erreur lors de la création de l'utilisateur: {str(e)}"}, 500
 
 def update_user_service(user_id, user_data):
-    if not ObjectId.is_valid(user_id):
-        return {"message": "ID utilisateur invalide."}, 400
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({"message": "ID utilisateur invalide."}), 400
 
-    is_valid, message = validate_user_data(user_data)
-    if not is_valid:
-        return {"message": message}, 400
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "Utilisateur non trouvé."}), 404
 
-    if 'password' in user_data:
-        user_data['password'] = hashlib.sha256(user_data['password'].encode('utf-8')).hexdigest()
+    # Vérification si le username ou l'email existe déjà pour un autre utilisateur
+    if 'username' in user_data:
+        existing_user_by_username = User.query.filter(
+            User.username == user_data['username'],
+            User.id != user_id
+        ).first()
+        if existing_user_by_username:
+            return jsonify({"error": "Le nom d'utilisateur est déjà utilisé par un autre compte."}), 400
 
-    success, message = User.update(user_id, user_data)
-    return {"message": message}, 200 if success else 400
+    if 'email' in user_data:
+        existing_user_by_email = User.query.filter(
+            User.email == user_data['email'],
+            User.id != user_id
+        ).first()
+        if existing_user_by_email:
+            return jsonify({"error": "L'adresse email est déjà utilisée par un autre compte."}), 400
+
+    # Mise à jour des champs de l'utilisateur
+    for key, value in user_data.items():
+        if hasattr(user, key):
+            setattr(user, key, value)
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Utilisateur mis à jour avec succès."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Erreur lors de la mise à jour de l'utilisateur: " + str(e)}), 500
 
 def delete_user_service(user_id):
-    # Logique supplémentaire avant suppression pourrait aller ici
-    User.delete(user_id)
-    return "Utilisateur supprimé avec succès."
+    user = User.query.get(user_id)
+    if not user:
+        return {"error": "Utilisateur non trouvé."}, 404
 
-def find_user_service(user_id):
-    user = User.find(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return {"message": "Utilisateur supprimé avec succès."}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Erreur lors de la suppression de l'utilisateur: {str(e)}"}, 500
+
+
+def get_user_service(user_id):
+    # Rechercher l'utilisateur par son ID
+    user = User.query.get(user_id)
+
     if user:
-        # Assurez-vous de convertir ObjectId en string si nécessaire ici
-        user['_id'] = str(user['_id'])
-        return user, 200  # Renvoie l'utilisateur et le code de statut HTTP 200
+        # Si l'utilisateur existe, retournez ses données
+        user_data = {
+            "id": user.id,
+            "nom": user.nom,
+            "prenom": user.prenom,
+            "email": user.email,
+            "adresse": user.adresse,
+            "role": user.role,
+            "username": user.username
+        }
+        return jsonify(user_data), 200
     else:
-        return {"message": "Utilisateur non trouvé."}, 404  # Renvoie un message d'erreur et le code de statut HTTP 404
+        # Si l'utilisateur n'existe pas, retournez un message d'erreur
+        return jsonify({"error": "Utilisateur non trouvé."}), 404
 
+def get_all_users_service():
+    try:
+        users = User.query.all()
+        users_data = [
+            {
+                "id": user.id,
+                "nom": user.nom,
+                "prenom": user.prenom,
+                "email": user.email,
+                "adresse": user.adresse,
+                "role": user.role,
+                "username": user.username
+            }
+            for user in users
+        ]
+        return users_data, 200
+    except Exception as e:
+        return {"error": str(e)}, 500

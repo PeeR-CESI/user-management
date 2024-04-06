@@ -1,10 +1,22 @@
 from flask import Flask
 from flasgger import Swagger
-from auth.routes import auth_bp
-from helloWorld.routes import test_bp
-from user.routes import user_bp
+from src.auth.routes import auth_bp
+from src.helloWorld.routes import test_bp
+from src.user.routes import user_bp
+from src.user.model import db
 
 app = Flask(__name__)
+
+# Configuration de la base de données
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost:5432/postgres'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialisation de l'objet SQLAlchemy
+db.init_app(app)
+
+# Créez les tables
+with app.app_context():
+    db.create_all()
 
 swagger_config = {
     "headers": [],

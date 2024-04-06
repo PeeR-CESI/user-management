@@ -1,39 +1,7 @@
 from flask import Blueprint, request
-from .service import register_user, login_user, authenticate_user
+from .service import login_user, authenticate_user
 
 auth_bp = Blueprint('auth_bp', __name__)
-
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    """
-    Inscription d'un nouvel utilisateur
-    ---
-    tags:
-      - auth
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Données de l'utilisateur à inscrire
-        required: true
-        schema:
-          type: object
-          required:
-            - username
-            - password
-          properties:
-            username:
-              type: string
-            password:
-              type: string
-    responses:
-      201:
-        description: Utilisateur enregistré avec succès
-      400:
-        description: Erreur de validation des données d'entrée
-    """
-    return register_user(request)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -67,6 +35,7 @@ def login():
       404:
         description: Nom d'utilisateur non trouvé
     """
+    # Passer l'objet 'request' à 'login_user'
     return login_user(request)
 
 @auth_bp.route('/authenticate', methods=['POST'])
