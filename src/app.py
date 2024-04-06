@@ -8,7 +8,7 @@ from src.user.model import db
 app = Flask(__name__)
 
 # Configuration de la base de données
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost:5432/postgres'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@postgresql:5432/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialisation de l'objet SQLAlchemy
