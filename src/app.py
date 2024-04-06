@@ -3,6 +3,7 @@ from flasgger import Swagger
 from src.auth.routes import auth_bp
 from src.helloWorld.routes import test_bp
 from src.user.routes import user_bp
+from src.review.routes import review_bp
 from src.user.model import db
 
 app = Flask(__name__)
@@ -38,6 +39,7 @@ swagger = Swagger(app, config=swagger_config)
 app.register_blueprint(test_bp)
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(user_bp, url_prefix='/user')
+app.register_blueprint(review_bp, url_prefix='/review')
 
 if __name__ == "__main__":
     app.run(port=5000)
