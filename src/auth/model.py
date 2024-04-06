@@ -1,4 +1,3 @@
-# Utilisez le même db instance que vous avez créé dans le fichier précédent
 from src.user.model import db
 
 class AuthUser(db.Model):

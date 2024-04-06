@@ -1,6 +1,5 @@
 from .model import User, db
 import hashlib
-from bson.objectid import ObjectId
 from flask import jsonify
 
 required_fields = ["nom", "prenom", "email", "adresse", "role", "username", "password"]
@@ -13,8 +12,6 @@ def validate_user_data(user_data):
 
     if user_data["role"] not in valid_roles:
         return False, f"Rôle invalide. Les rôles valides sont: {', '.join(valid_roles)}."
-
-    # Ajouter ici d'autres validations si nécessaire
 
     return True, "Validation réussie."
 
