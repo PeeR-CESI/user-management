@@ -16,6 +16,9 @@ COPY . .
 # Ajouter le répertoire de travail courant (/app) à PYTHONPATH
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
+# Définir la variable d'environnement FLASK_APP pour indiquer le fichier d'entrée de l'application Flask
+ENV FLASK_APP app.py
+
 # Exposer le port sur lequel l'application Flask écoute
 EXPOSE 5000
 
