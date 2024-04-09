@@ -1,5 +1,6 @@
 from flask import Flask
 from flasgger import Swagger
+from flask_cors import CORS
 from src.auth.routes import auth_bp
 from src.helloWorld.routes import test_bp
 from src.user.routes import user_bp
@@ -15,6 +16,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialisation de l'objet SQLAlchemy
 db.init_app(app)
+
+CORS(app)
 
 # Créez les tables
 with app.app_context():
