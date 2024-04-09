@@ -89,6 +89,10 @@ def update_user(user_id):
               type: string
             password:
               type: string
+            service_ids:
+              type: string
+            sold_service_ids:
+              type: string
     responses:
       200:
         description: Utilisateur mis à jour avec succès

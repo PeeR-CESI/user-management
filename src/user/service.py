@@ -79,8 +79,14 @@ def update_user_service(user_id, user_data):
 
     # Mise à jour des champs de l'utilisateur
     for key, value in user_data.items():
-        if hasattr(user, key):
+        if hasattr(user, key)and key not in ['service_ids', 'sold_service_ids']:
             setattr(user, key, value)
+
+    # Gérer la mise à jour des ID de services et services vendus
+    if 'service_ids' in user_data:
+        user.service_ids = ",".join(map(str, user_data['service_ids']))
+    if 'sold_service_ids' in user_data:
+        user.sold_service_ids = ",".join(map(str, user_data['sold_service_ids']))
 
     try:
         db.session.commit()
@@ -116,7 +122,9 @@ def get_user_service(user_id):
             "email": user.email,
             "adresse": user.adresse,
             "role": user.role,
-            "username": user.username
+            "username": user.username,
+            "service_ids": user.service_ids.split(",") if user.service_ids else [],
+            "sold_service_ids": user.sold_service_ids.split(",") if user.sold_service_ids else [],
         }
         return jsonify(user_data), 200
     else:
