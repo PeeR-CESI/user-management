@@ -16,6 +16,6 @@ def send_invitation_email(email_address, invite_link):
         msg = Message("Invitation à rejoindre notre plateforme",
                       sender=app.config['MAIL_USERNAME'],
                       recipients=[email_address])
-        msg.body = f"Bonjour, \n\nVous êtes invité à rejoindre notre plateforme. Veuillez utiliser ce lien pour vous inscrire: {'http://peer.cesi/account'}"
+        msg.body = f"Bonjour, \n\nVous êtes invité à rejoindre notre plateforme. Veuillez utiliser ce lien pour vous inscrire: {'http://peer.cesi/register'}"
 
         mail.send(msg)

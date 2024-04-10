@@ -40,7 +40,8 @@ def login_user(request):
                 'access_token': access_token,
                 'refresh_token': refresh_token,
                 'role': user.role,  # Retournez le rôle de l'utilisateur
-                'user_id' : user.id
+                'user_id': user.id,
+                'username': user.username
             }), 200
         else:
             return jsonify({'message': 'Mot de passe incorrect.'}), 401
